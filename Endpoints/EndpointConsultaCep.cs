@@ -18,14 +18,7 @@ namespace DependencyInjection.Endpoint
 
             if (!jsonCepObjeto.Erro)
             {
-                StringBuilder html = new StringBuilder();
-                html.Append($"<h3>Dados para o CEP {jsonCepObjeto.CEP} </h3>");
-                html.Append($"<p>Logradouro: {jsonCepObjeto.Logradouro}</p>");
-                html.Append($"<p>Bairro: {jsonCepObjeto.Bairro}</p>");
-                html.Append($"<p>Cidade/UF: {jsonCepObjeto.Localidade}/{jsonCepObjeto.Estado}</p>");
-
-                context.Response.ContentType = "text/html; charset=utf-8";
-                await context.Response.WriteAsync(html.ToString());
+                await FormatadorEndereco.Singleton.Formatar(context, jsonCepObjeto);
             }
             else
             {

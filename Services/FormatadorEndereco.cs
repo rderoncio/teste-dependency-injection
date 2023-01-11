@@ -6,6 +6,8 @@ public class FormatadorEndereco : IFormatadorEndereco
 {
     private int contadorUso = 0;
 
+    private static FormatadorEndereco _instance;
+
     public async Task Formatar(HttpContext context, IEndereco endereco)
     {
         contadorUso ++;
@@ -19,5 +21,17 @@ public class FormatadorEndereco : IFormatadorEndereco
 
         context.Response.ContentType = "text/plain; charset=utf-8";
         await context.Response.WriteAsync(html.ToString());
+    }
+
+    public static FormatadorEndereco Singleton
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = new FormatadorEndereco();
+            }
+            return _instance;
+        }
     }
 }
