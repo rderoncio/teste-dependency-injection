@@ -13,9 +13,10 @@ namespace DependencyInjection
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IFormatadorEndereco, FormatadorEnderecoHtml>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IFormatadorEndereco formatador)
         {
             app.UseDeveloperExceptionPage();
 
@@ -29,7 +30,7 @@ namespace DependencyInjection
             {
                 if (context.Request.Path.StartsWithSegments("/middleware/lambda"))
                 {
-                    await TypeBroker.FormatadorEndereco.Formatar(context,
+                    await formatador.Formatar(context,
                      await EndpointConsultaCep.ConsultaCep("01001000"));
                 }
                 else
@@ -47,7 +48,7 @@ namespace DependencyInjection
                 endpoints.MapGet("/endpoint/lambda/{cep:regex(^\\d{{8}}$)?}", async context =>
                 {
                     string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
-                    await TypeBroker.FormatadorEndereco.Formatar(context,
+                    await formatador.Formatar(context,
                      await EndpointConsultaCep.ConsultaCep(cep));
                 });
             });

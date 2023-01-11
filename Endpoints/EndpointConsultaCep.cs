@@ -1,10 +1,8 @@
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Routing;
 
 namespace DependencyInjection.Endpoint
 {
@@ -18,7 +16,9 @@ namespace DependencyInjection.Endpoint
 
             if (!jsonCepObjeto.Erro)
             {
-                await TypeBroker.FormatadorEndereco.Formatar(context, jsonCepObjeto);
+                // await TypeBroker.FormatadorEndereco.Formatar(context, jsonCepObjeto);
+                IFormatadorEndereco formatador = context.RequestServices.GetRequiredService<IFormatadorEndereco>();
+                await formatador.Formatar(context, jsonCepObjeto);
             }
             else
             {

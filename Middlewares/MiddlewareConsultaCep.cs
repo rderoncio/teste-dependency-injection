@@ -9,10 +9,12 @@ namespace DependencyInjection.Middlewares
     public class MiddlewareConsultaCep
     {
         private readonly RequestDelegate _next;
+        private IFormatadorEndereco _formatador;
 
-        public MiddlewareConsultaCep(RequestDelegate next)
+        public MiddlewareConsultaCep(RequestDelegate next, IFormatadorEndereco formatador)
         {
             _next = next;
+            _formatador = formatador;
         }
 
         public MiddlewareConsultaCep()
@@ -27,7 +29,7 @@ namespace DependencyInjection.Middlewares
                 string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
                 JsonCepModel jsonCepObjeto = await ConsultaCep(cep);
 
-                await TypeBroker.FormatadorEndereco.Formatar(context, jsonCepObjeto);
+                await _formatador.Formatar(context, jsonCepObjeto);
             }
 
             if (_next != null)
