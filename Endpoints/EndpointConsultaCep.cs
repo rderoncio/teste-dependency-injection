@@ -6,9 +6,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DependencyInjection.Endpoint
 {
-    public static class EndpointConsultaCep
+    public class EndpointConsultaCep
     {
-        public static async Task Endpoint(HttpContext context)
+        public async Task Endpoint(HttpContext context)
         {
             string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
 

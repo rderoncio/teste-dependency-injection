@@ -42,7 +42,7 @@ namespace DependencyInjection
             app.UseEndpoints(endpoints =>
             {
                 // http://localhost:port/endpoint/classe
-                endpoints.MapGet("/endpoint/classe/{cep:regex(^\\d{{8}}$)?}", EndpointConsultaCep.Endpoint);
+                endpoints.MapEndpoint<EndpointConsultaCep>("/endpoint/classe/{cep:regex(^\\d{{8}}$)?}");
 
                 // http://localhost:port/endpoint/lambda
                 endpoints.MapGet("/endpoint/lambda/{cep:regex(^\\d{{8}}$)?}", async context =>
