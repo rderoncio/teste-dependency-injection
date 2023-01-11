@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -21,8 +22,19 @@ namespace Microsoft.AspNetCore.Builder
             // app.ServiceProvider: Resolve parâmetros via Injeção de Dependências
             T instanceEndpoint = ActivatorUtilities.CreateInstance<T>(app.ServiceProvider);
 
+            // CASO DE USO PARA .ADDSINGLETON<>()
             // Mapeia uma nova rota para 'path' apontando para o 'T'
-            app.MapGet(path, (RequestDelegate)methodInfo.CreateDelegate(typeof(RequestDelegate), instanceEndpoint));
+            // app.MapGet(path, (RequestDelegate)methodInfo.CreateDelegate(typeof(RequestDelegate), instanceEndpoint));
+        
+            // CASO DE USO PARA .ADDSCOPED<>()
+            // Retorna os parametros do método
+            ParameterInfo[] parameterInfo = methodInfo.GetParameters();
+
+            app.MapGet(path, context =>
+                (Task)methodInfo.Invoke(instanceEndpoint, parameterInfo.Select(
+                    p => p.ParameterType == typeof(HttpContext) ? context : context.RequestServices.GetService(p.ParameterType)).ToArray()
+                ));
+        
         }
     }
 }

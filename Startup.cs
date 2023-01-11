@@ -6,17 +6,34 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using System;
+using Microsoft.Extensions.Configuration;
 
 namespace DependencyInjection
 {
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services)
+        private IConfiguration configuration;
+        public Startup(IConfiguration configuration)
         {
-            services.AddSingleton<IFormatadorEndereco, FormatadorEnderecoHtml>();
+            this.configuration = configuration;
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IFormatadorEndereco formatador)
+        public void ConfigureServices(IServiceCollection services)
+        {
+            //services.AddSingleton<IFormatadorEndereco, FormatadorEnderecoHtml>();
+            //services.AddTransient<IFormatadorEndereco, FormatadorEnderecoHtml>();
+            //services.AddScoped<IFormatadorEndereco, FormatadorEnderecoHtml>();
+
+            services.AddScoped<IFormatadorEndereco>(serviceProvider => 
+            {
+                string tipo = configuration["servicos:IFormatadorEndereco"];
+                return (IFormatadorEndereco)ActivatorUtilities.CreateInstance(serviceProvider,
+                    tipo == null ? typeof(FormatadorEnderecoPlain) : Type.GetType(tipo, true)
+                );
+            });
+        }
+
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
 
@@ -30,8 +47,10 @@ namespace DependencyInjection
             {
                 if (context.Request.Path.StartsWithSegments("/middleware/lambda"))
                 {
-                    await formatador.Formatar(context,
-                     await EndpointConsultaCep.ConsultaCep("01001000"));
+                    IFormatadorEndereco formatador = context.RequestServices.GetService<IFormatadorEndereco>();
+                    context.Response.ContentType = "text/html; charset=utf-8;";
+                    await formatador.Formatar(context, await EndpointConsultaCep.ConsultaCep("01001000"));
+                    await formatador.Formatar(context, await EndpointConsultaCep.ConsultaCep("04257143"));
                 }
                 else
                 {
@@ -47,6 +66,8 @@ namespace DependencyInjection
                 // http://localhost:port/endpoint/lambda
                 endpoints.MapGet("/endpoint/lambda/{cep:regex(^\\d{{8}}$)?}", async context =>
                 {
+                    IFormatadorEndereco formatador = context.RequestServices.GetService<IFormatadorEndereco>();
+                    context.Response.ContentType = "text/html; charset=utf-8;";
                     string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
                     await formatador.Formatar(context,
                      await EndpointConsultaCep.ConsultaCep(cep));

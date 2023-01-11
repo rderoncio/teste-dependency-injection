@@ -9,27 +9,28 @@ namespace DependencyInjection.Middlewares
     public class MiddlewareConsultaCep
     {
         private readonly RequestDelegate _next;
-        private IFormatadorEndereco _formatador;
 
-        public MiddlewareConsultaCep(RequestDelegate next, IFormatadorEndereco formatador)
+        public MiddlewareConsultaCep(RequestDelegate next)
         {
             _next = next;
-            _formatador = formatador;
         }
 
         public MiddlewareConsultaCep()
         {
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context, IFormatadorEndereco formatador1, IFormatadorEndereco formatador2)
         {
 
             if (context.Request.Path.StartsWithSegments("/middleware/classe"))
             {
                 string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
-                JsonCepModel jsonCepObjeto = await ConsultaCep(cep);
 
-                await _formatador.Formatar(context, jsonCepObjeto);
+                JsonCepModel jsonCepObjeto1 = await ConsultaCep(cep);
+                JsonCepModel jsonCepObjeto2 = await ConsultaCep("04257143");
+                context.Response.ContentType = "text/html; charset=utf-8;";
+                await formatador1.Formatar(context, jsonCepObjeto1);
+                await formatador2.Formatar(context, jsonCepObjeto2);
             }
 
             if (_next != null)

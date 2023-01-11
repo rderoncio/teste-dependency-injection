@@ -8,7 +8,7 @@ namespace DependencyInjection.Endpoint
 {
     public class EndpointConsultaCep
     {
-        public async Task Endpoint(HttpContext context)
+        public async Task Endpoint(HttpContext context, IFormatadorEndereco formatador)
         {
             string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
 
@@ -17,7 +17,8 @@ namespace DependencyInjection.Endpoint
             if (!jsonCepObjeto.Erro)
             {
                 // await TypeBroker.FormatadorEndereco.Formatar(context, jsonCepObjeto);
-                IFormatadorEndereco formatador = context.RequestServices.GetRequiredService<IFormatadorEndereco>();
+                // IFormatadorEndereco formatador = context.RequestServices.GetRequiredService<IFormatadorEndereco>();
+                context.Response.ContentType = "text/html; charset=utf-8";
                 await formatador.Formatar(context, jsonCepObjeto);
             }
             else
