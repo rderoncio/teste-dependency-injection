@@ -27,7 +27,7 @@ namespace DependencyInjection.Middlewares
                 string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
                 JsonCepModel jsonCepObjeto = await ConsultaCep(cep);
 
-                await FormatadorEndereco.Singleton.Formatar(context, jsonCepObjeto);
+                await TypeBroker.FormatadorEndereco.Formatar(context, jsonCepObjeto);
             }
 
             if (_next != null)

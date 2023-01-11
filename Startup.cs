@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace DependencyInjection
 {
@@ -26,9 +27,9 @@ namespace DependencyInjection
             // http://localhost:port/middleware/lambda
             app.Use(async (context, next) =>
             {
-                if (context.Request.Path == "/middleware/lambda")
+                if (context.Request.Path.StartsWithSegments("/middleware/lambda"))
                 {
-                    await FormatadorEndereco.Singleton.Formatar(context,
+                    await TypeBroker.FormatadorEndereco.Formatar(context,
                      await EndpointConsultaCep.ConsultaCep("01001000"));
                 }
                 else
@@ -46,7 +47,7 @@ namespace DependencyInjection
                 endpoints.MapGet("/endpoint/lambda/{cep:regex(^\\d{{8}}$)?}", async context =>
                 {
                     string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
-                    await FormatadorEndereco.Singleton.Formatar(context,
+                    await TypeBroker.FormatadorEndereco.Formatar(context,
                      await EndpointConsultaCep.ConsultaCep(cep));
                 });
             });

@@ -18,7 +18,7 @@ namespace DependencyInjection.Endpoint
 
             if (!jsonCepObjeto.Erro)
             {
-                await FormatadorEndereco.Singleton.Formatar(context, jsonCepObjeto);
+                await TypeBroker.FormatadorEndereco.Formatar(context, jsonCepObjeto);
             }
             else
             {
