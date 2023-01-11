@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using System;
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 namespace DependencyInjection
 {
@@ -20,9 +21,7 @@ namespace DependencyInjection
 
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddSingleton<IFormatadorEndereco, FormatadorEnderecoHtml>();
-            //services.AddTransient<IFormatadorEndereco, FormatadorEnderecoHtml>();
-            //services.AddScoped<IFormatadorEndereco, FormatadorEnderecoHtml>();
+            services.AddSingleton(typeof(ICollection<>), typeof(List<>));
 
             services.AddScoped<IFormatadorEndereco>(serviceProvider => 
             {
@@ -39,41 +38,33 @@ namespace DependencyInjection
 
             app.UseRouting();
 
-            // http://localhost:port/middleware/classe
-            app.UseMiddleware<MiddlewareConsultaCep>();
-
-            // http://localhost:port/middleware/lambda
-            app.Use(async (context, next) =>
+            app.UseEndpoints(endpoint =>
             {
-                if (context.Request.Path.StartsWithSegments("/middleware/lambda"))
+                endpoint.MapGet("/string", async context =>
                 {
-                    IFormatadorEndereco formatador = context.RequestServices.GetService<IFormatadorEndereco>();
-                    context.Response.ContentType = "text/html; charset=utf-8;";
-                    await formatador.Formatar(context, await EndpointConsultaCep.ConsultaCep("01001000"));
-                    await formatador.Formatar(context, await EndpointConsultaCep.ConsultaCep("04257143"));
-                }
-                else
-                {
-                    await next();
-                }
-            });
-
-            app.UseEndpoints(endpoints =>
-            {
-                // http://localhost:port/endpoint/classe
-                endpoints.MapEndpoint<EndpointConsultaCep>("/endpoint/classe/{cep:regex(^\\d{{8}}$)?}");
-
-                // http://localhost:port/endpoint/lambda
-                endpoints.MapGet("/endpoint/lambda/{cep:regex(^\\d{{8}}$)?}", async context =>
-                {
-                    IFormatadorEndereco formatador = context.RequestServices.GetService<IFormatadorEndereco>();
-                    context.Response.ContentType = "text/html; charset=utf-8;";
-                    string cep = context.Request.RouteValues["cep"] as string ?? "01001000";
-                    await formatador.Formatar(context,
-                     await EndpointConsultaCep.ConsultaCep(cep));
+                    ICollection<string> lista = context.RequestServices.GetService<ICollection<string>>();
+                    lista.Add($"Request: {DateTime.Now.ToLongTimeString()}");
+                    context.Response.ContentType = "text/plain; charset=utf-8;";
+                    foreach (var str in lista)
+                    {
+                        await context.Response.WriteAsync($"String: {str}\n");
+                    }
                 });
             });
 
+            app.UseEndpoints(endpoint =>
+            {
+                endpoint.MapGet("/int", async context =>
+                {
+                    ICollection<int> lista = context.RequestServices.GetService<ICollection<int>>();
+                    lista.Add(lista.Count + 1);
+                    context.Response.ContentType = "text/plain; charset=utf-8;";
+                    foreach (var val in lista)
+                    {
+                        await context.Response.WriteAsync($"Int: {val}\n");
+                    }
+                });
+            });
 
             // http://localhost:port
             app.Run(async context =>
